@@ -1,3 +1,4 @@
+
 name: Terraform
 
 on:
@@ -27,8 +28,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # OIDC is blocked on this account by an AWS-managed SCP, so we use the
-      # limited GitHub Actions IAM user's keys, stored as encrypted secrets.
+      - name: Check AWS secrets
+        env:
+          AWS_KEY: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          if [ -z "$AWS_KEY" ] || [ -z "$AWS_SECRET" ]; then
+            echo "AWS secrets are missing"
+            exit 1
+          fi
+          echo "Both AWS secrets are available"
+
       - name: Log in to AWS
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -53,7 +63,6 @@ jobs:
       - name: Terraform Plan
         run: terraform plan -input=false -out=tfplan
 
-      # Apply only when code lands on main, never on pull requests.
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         run: terraform apply -input=false -auto-approve tfplan
