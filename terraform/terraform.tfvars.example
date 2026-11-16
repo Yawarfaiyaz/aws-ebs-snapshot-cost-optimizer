@@ -1,0 +1,5 @@
+# Copy this file to terraform.tfvars for LOCAL runs (terraform.tfvars is git-ignored).
+# In GitHub Actions the email comes from the repository variable ALERT_EMAIL instead.
+alert_email    = "you@example.com"
+dry_run        = true
+retention_days = 30
